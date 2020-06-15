@@ -230,13 +230,15 @@ total_score_bc = lastdata[score_dsr_bc].sum()
 print(total_score_bc, total_to_attribute_bc, total_to_attribute_bc/total_score_bc)
 valeur_point_bc=total_to_attribute_bc/total_score_bc
 print("valeur point", valeur_point_bc)
+
+dsr_bc_montant = "DSR bourg centre éligible Montant attribué"
+
 """ Ce bout de code effectue une recherche dichotomique pour déterminer la valeur du point qui dépense pile le budget...
 Il semble que ce soit pas comme ça que marche la loi..
 
 valeur_point_max=2*valeur_point_bc
 valeur_point_bc=0
 precision_vp=0.0000000001
-dsr_bc_montant = "DSR bourg centre éligible Montant attribué"
 nbiterations=0
 
 while valeur_point_max>precision_vp:
@@ -269,8 +271,8 @@ print(lastdata[dsr_bc_montant].sum())
 lastdata.loc[(lastdata[montant_previous_year_bc] > 0) & (lastdata[elig_bc]), dsr_bc_montant] = np.minimum(
     1.2 * lastdata[montant_previous_year_bc], lastdata[dsr_bc_montant])
 print(lastdata[dsr_bc_montant].sum())
-if lastdata[dsr_bc_montant].sum() > total_to_attribute_bc:
-    valeur_point_bc -= valeur_point_max
+# if lastdata[dsr_bc_montant].sum() > total_to_attribute_bc:
+#     valeur_point_bc -= valeur_point_max
 
 #Partie 2 : Fraction péréquation
 
