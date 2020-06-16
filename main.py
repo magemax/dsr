@@ -59,6 +59,7 @@ print(countgroupby(is_outre_mer))
 # pq = fraction péréquation
 # cible = fraction cible
 actual_montant_elig_bc = "Dotation de solidarité rurale Bourg-centre#Montant de la commune éligible"
+actual_montant_dsr_bc = "Dotation de solidarité rurale Bourg-centre#Montant global réparti"
 actual_montant_dsr_pq = "Dotation de solidarité rurale - Péréquation#Montant global réparti (après garantie CN)"
 actual_montant_dsr_cible = "Dotation de solidarité rurale - Cible#Montant global réparti"
 actual_elig_bc = "eligible bc"
@@ -231,7 +232,7 @@ print(total_score_bc, total_to_attribute_bc, total_to_attribute_bc/total_score_b
 valeur_point_bc=total_to_attribute_bc/total_score_bc
 print("valeur point", valeur_point_bc)
 
-dsr_bc_montant = "DSR bourg centre éligible Montant attribué"
+dsr_bc_montant_eligible = "DSR bourg centre éligible Montant attribué communes éligibles"
 
 """ Ce bout de code effectue une recherche dichotomique pour déterminer la valeur du point qui dépense pile le budget...
 Il semble que ce soit pas comme ça que marche la loi..
@@ -243,16 +244,16 @@ nbiterations=0
 
 while valeur_point_max>precision_vp:
     valeur_point_bc+=valeur_point_max
-    lastdata[dsr_bc_montant]=valeur_point_bc*lastdata[score_dsr_bc]
-    print(lastdata[dsr_bc_montant].sum())
-    lastdata.loc[(lastdata[montant_previous_year_bc]>0) & (lastdata[elig_bc]), dsr_bc_montant] = np.maximum(0.9 * lastdata[montant_previous_year_bc], lastdata[dsr_bc_montant])
-    #lastdata[dsr_bc_montant]= np.maximum(0.9 * lastdata[montant_previous_year_bc], lastdata[dsr_bc_montant])
-    print(lastdata[dsr_bc_montant].sum())
+    lastdata[dsr_bc_montant_eligible]=valeur_point_bc*lastdata[score_dsr_bc]
+    print(lastdata[dsr_bc_montant_eligible].sum())
+    lastdata.loc[(lastdata[montant_previous_year_bc]>0) & (lastdata[elig_bc]), dsr_bc_montant_eligible] = np.maximum(0.9 * lastdata[montant_previous_year_bc], lastdata[dsr_bc_montant_eligible])
+    #lastdata[dsr_bc_montant_eligible]= np.maximum(0.9 * lastdata[montant_previous_year_bc], lastdata[dsr_bc_montant_eligible])
+    print(lastdata[dsr_bc_montant_eligible].sum())
     print(len(lastdata[lastdata[score_dsr_bc]>0]))
-    lastdata.loc[(lastdata[montant_previous_year_bc]>0) & (lastdata[elig_bc]), dsr_bc_montant] = np.minimum(1.2* lastdata[montant_previous_year_bc], lastdata[dsr_bc_montant])
+    lastdata.loc[(lastdata[montant_previous_year_bc]>0) & (lastdata[elig_bc]), dsr_bc_montant_eligible] = np.minimum(1.2* lastdata[montant_previous_year_bc], lastdata[dsr_bc_montant_eligible])
     print(len(lastdata[lastdata[score_dsr_bc]>0]))
-    print(lastdata[dsr_bc_montant].sum())
-    if lastdata[dsr_bc_montant].sum()>total_to_attribute_bc:
+    print(lastdata[dsr_bc_montant_eligible].sum())
+    if lastdata[dsr_bc_montant_eligible].sum()>total_to_attribute_bc:
         valeur_point_bc-=valeur_point_max
     valeur_point_max/=2
     nbiterations+=1
@@ -262,17 +263,21 @@ print("nb iterations", nbiterations)
 lastdata.to_csv("jipopt.csv")"""
 
 #valeur_point_bc=37.37858154
-lastdata[dsr_bc_montant] = valeur_point_bc * lastdata[score_dsr_bc]
-print(lastdata[dsr_bc_montant].sum())
+lastdata[dsr_bc_montant_eligible] = valeur_point_bc * lastdata[score_dsr_bc]
+print(lastdata[dsr_bc_montant_eligible].sum())
 #Montant garantie au niveau précédent pour les communes éligibles
-lastdata.loc[(lastdata[montant_previous_year_bc] > 0) & (lastdata[elig_bc]), dsr_bc_montant] = np.maximum(
-    0.9 * lastdata[montant_previous_year_bc], lastdata[dsr_bc_montant])
-print(lastdata[dsr_bc_montant].sum())
-lastdata.loc[(lastdata[montant_previous_year_bc] > 0) & (lastdata[elig_bc]), dsr_bc_montant] = np.minimum(
-    1.2 * lastdata[montant_previous_year_bc], lastdata[dsr_bc_montant])
-print(lastdata[dsr_bc_montant].sum())
-# if lastdata[dsr_bc_montant].sum() > total_to_attribute_bc:
+lastdata.loc[(lastdata[montant_previous_year_bc] > 0) & (lastdata[elig_bc]), dsr_bc_montant_eligible] = np.maximum(
+    0.9 * lastdata[montant_previous_year_bc], lastdata[dsr_bc_montant_eligible])
+print(lastdata[dsr_bc_montant_eligible].sum())
+lastdata.loc[(lastdata[montant_previous_year_bc] > 0) & (lastdata[elig_bc]), dsr_bc_montant_eligible] = np.minimum(
+    1.2 * lastdata[montant_previous_year_bc], lastdata[dsr_bc_montant_eligible])
+print(lastdata[dsr_bc_montant_eligible].sum())
+# if lastdata[dsr_bc_montant_eligible].sum() > total_to_attribute_bc:
 #     valeur_point_bc -= valeur_point_max
+
+dsr_bc_montant_total = "DSR bourg centre Montant attribué total"
+
+lastdata[dsr_bc_montant_total] = lastdata[dsr_bc_montant_eligible] + lastdata[montant_garantie_dsr_bourg_centre]
 
 #Partie 2 : Fraction péréquation
 
@@ -286,7 +291,7 @@ actual_elig_pq = "Eligible péréquation d'après la DGCL"
 lastdata[actual_elig_pq] = (lastdata[actual_montant_pq_1]>0)
 # Montant
 
-montant_pq = "DSR fraction péréquation Montant attribué"
+montant_pq = "DSR fraction péréquation Montant attribué éligible"
 montant_pq_1 = montant_pq + " - part potentiel financier par habitant"
 montant_pq_2 = montant_pq + " - part voirie"
 montant_pq_3 = montant_pq + " - part enfants"
@@ -349,6 +354,10 @@ lastdata.loc[(lastdata[montant_previous_year_pq] > 0) & (lastdata[elig_pq]), mon
     1.2 * lastdata[montant_previous_year_pq], lastdata[montant_pq])
 print(lastdata[montant_pq].sum())
 
+
+dsr_pq_montant_total = "DSR fraction péréquation Montant attribué total"
+
+lastdata[dsr_pq_montant_total] = lastdata[montant_pq]   #pour l'instant, pas de moyen de calculer la garantie ni de la trouver dans le fichier
 
 #DSR partie 3 : part cible
 
@@ -413,11 +422,16 @@ total_budget_dsr_fraction_cible = 323_780_451
 total_to_attribute_cible = total_budget_dsr_fraction_cible - lastdata[dsr_cible_garantie_vieux].sum() - lastdata[dsr_cible_garantie_lastyear].sum() - 4_549_441 #unexplained dons
 
 
-montant_cible = "DSR fraction cible Montant attribué"
+montant_cible = "DSR fraction cible Montant attribué éligible"
 montant_cible_1 = montant_cible + " - part potentiel financier par habitant"
 montant_cible_2 = montant_cible + " - part voirie"
 montant_cible_3 = montant_cible + " - part enfants"
 montant_cible_4 = montant_cible + " - part potentiel financier par hectare"
+
+
+dsr_cible_montant_total = "DSR cible Montant attribué total"
+
+
 # part 3.1 : potentiel financier
 weight_dsr_cible_1 = 0.3
 score_dsr_cible_1 = montant_cible_1.replace("Montant attribué", "score")
@@ -462,6 +476,20 @@ print(lastdata[montant_cible].sum())
 lastdata.loc[(lastdata[montant_previous_year_cible] > 0) & (lastdata[elig_cible]), montant_cible] = np.minimum(
     1.2 * lastdata[montant_previous_year_cible], lastdata[montant_cible])
 
+
+
+lastdata[dsr_cible_montant_total] = lastdata[montant_cible] + lastdata[dsr_cible_garantie_vieux] + lastdata[dsr_cible_garantie_lastyear]
+
+
+dsr_montant_total = "DSR - montant total attribué"
+
+lastdata[dsr_montant_total] = lastdata[dsr_bc_montant_total] + lastdata[dsr_pq_montant_total] + lastdata[dsr_cible_montant_total]
+
+actual_dsr_montant_total = "DSR - Vrai montant total attribué"
+
+lastdata[actual_dsr_montant_total] = lastdata[actual_montant_dsr_bc] + lastdata[actual_montant_dsr_pq] + lastdata[actual_montant_dsr_cible]
+
+
 #1/0
 #cols_interessantes = [code_comme,pop_plaf, part_canton, bur_centr, chef_lieu_canton, is_chef_lieu_canton, elig_bc]
 
@@ -493,11 +521,13 @@ for comp in (
     [elig_bc,actual_elig_bc,"bool"],
     [elig_pq,actual_elig_pq,"bool"],
     [elig_cible,actual_elig_cible,"bool"],
-    [dsr_bc_montant,actual_montant_elig_bc,"number"],
-    [montant_pq,actual_montant_dsr_pq,"number"],
-    [montant_pq,actual_montant_elig_pq,"number"],
-    [montant_cible,actual_montant_dsr_cible,"number"],
+    [dsr_bc_montant_eligible,actual_montant_elig_bc,"number"],
+    [dsr_bc_montant_total,actual_montant_dsr_bc,"number"],
+    [dsr_pq_montant_total,actual_montant_dsr_pq,"number"],
+    [dsr_pq_montant_total,actual_montant_elig_pq,"number"],
+    [dsr_cible_montant_total,actual_montant_dsr_cible,"number"],
     [montant_cible, actual_montant_elig_cible, "number"],
+    [dsr_montant_total, actual_dsr_montant_total, "number"],
 ):
     comparison_report(comp[1],comp[0],comp[2])
 
